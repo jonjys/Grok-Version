@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<title>KARMA</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #000; --s1: #0a0a0f; --s2: #111118; --s3: #1a1a24; --s4: #242432;
+  --line: rgba(255,255,255,.08); --t1: #f2f2fa; --t2: #888; --t3: #444;
+  --green: #00ff88; --blue: #4488ff; --pink: #ff3377; --gold: #ffcc00;
+  --purple: #aa66ff; --red: #ff4455; --teal: #00ddcc;
+  --sat: env(safe-area-inset-top, 0px); --sab: env(safe-area-inset-bottom, 0px);
+  --ff-head: 'Syne', sans-serif; --ff-body: 'DM Sans', sans-serif;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { height:100%; width:100%; overflow:hidden; background:var(--bg); color:var(--t1); font-family:var(--ff-body); }
+#app { max-width:430px; margin:0 auto; height:100%; display:flex; flex-direction:column; position:relative; }
+
+/* Topbar, Bottom Nav, Pet Float etc. behålls likadant men renare */
+.topbar, .bnav, .pet-float { /* ... dina befintliga stilar ... */ }
+
+/* Exempel på en view */
+.view { display:none; flex-direction:column; height:100%; overflow-y:auto; }
+.view.active { display:flex; }
+
+/* Din pet-styling, flash feed osv. kan behållas */
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- Topbar -->
+  <div class="topbar">...</div>
+
+  <!-- Main Content -->
+  <div class="main">
+    <!-- PET VIEW -->
+    <div id="view-pet" class="view active"> ... din pet-logik ... </div>
+    
+    <!-- FLASH FEED -->
+    <div id="view-flash" class="view"> ... </div>
+    
+    <!-- Fler views som du vill -->
+  </div>
+
+  <!-- Bottom Nav -->
+  <div class="bnav"> ... </div>
+</div>
+
+<script>
+// Global state
+let G = {
+  level: 1,
+  xp: 0,
+  kc: 500,
+  coins: 1247,
+  pet: { name: "Luna", emoji: "🐾", mood: "happy" }
+};
+
+// Exempel på data-driven aktiviteter
+const dailyActivities = [
+  { id:1, title:"Filma din frukost", reward: {xp:50, kc:5}, type:"flash" },
+  // ... fler
+];
+
+// Render-funktioner
+function renderPet() { /* din pet-logik */ }
+function switchView(viewId) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(viewId).classList.add('active');
+}
+
+// Init
+document.addEventListener('DOMContentLoaded', () => {
+  renderPet();
+  // ... fler init
+});
+</script>
+</body>
+</html>
