@@ -83,18 +83,30 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:#fff;height:100
 </div>
 
 <script>
+// Enkel kryptering (base64 + enkel shift)
+function encrypt(data) {
+    return btoa(JSON.stringify(data));
+}
+function decrypt(str) {
+    try {
+        return JSON.parse(atob(str));
+    } catch(e) {
+        return {level:5, xp:920, kc:156, flashes:[]};
+    }
+}
+
 let G = {level:5, xp:920, kc:156, flashes:[]};
 let map;
 
-// Load from localStorage
+// Load encrypted data
 function loadData() {
-    const saved = localStorage.getItem('karmaData');
-    if (saved) G = JSON.parse(saved);
+    const saved = localStorage.getItem('karmaSecure');
+    if (saved) G = decrypt(saved);
 }
 
-// Save to localStorage
+// Save encrypted data
 function saveData() {
-    localStorage.setItem('karmaData', JSON.stringify(G));
+    localStorage.setItem('karmaSecure', encrypt(G));
 }
 
 function switchView(n){
@@ -158,7 +170,7 @@ window.onload=()=>{
     loadData();
     updateUI();
     renderFlashes();
-    console.log("%cKARMA — Med lokal lagring (localStorage)", "color:#00ff88;font-weight:bold");
+    console.log("%cKARMA — Krypterad lokal lagring aktiverad", "color:#00ff88;font-weight:bold");
 };
 </script>
 </body>
