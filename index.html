@@ -8,78 +8,63 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
-:root {
-    --bg: #000; --s2: #111118; --green: #00ff88; --pink: #ff3377; --gold: #ffcc00; --purple: #aa66ff; --teal: #00ddcc;
-    --sat: env(safe-area-inset-top, 0px); --sab: env(safe-area-inset-bottom, 0px);
-    --ff-head: 'Syne', sans-serif;
-}
-* { margin:0; padding:0; box-sizing:border-box; }
-body { font-family:'DM Sans',sans-serif; background:var(--bg); color:#fff; height:100vh; overflow:hidden; }
-#app { max-width:430px; margin:auto; height:100%; display:flex; flex-direction:column; position:relative; }
-
-.topbar { position:absolute; top:0; left:0; right:0; height:calc(52px + var(--sat)); padding-top:var(--sat); display:flex; align-items:center; justify-content:space-between; padding:0 16px; background:rgba(0,0,0,0.9); z-index:100; }
-.logo { font-family:var(--ff-head); font-size:24px; font-weight:900; letter-spacing:-1px; }
-
-.main { flex:1; overflow:hidden; position:relative; padding-top:52px; }
-.view { position:absolute; inset:0; display:none; flex-direction:column; overflow-y:auto; background:var(--bg); }
-.view.active { display:flex; }
-
-.card { background:var(--s2); margin:12px 16px; padding:16px; border-radius:18px; border:1px solid rgba(255,255,255,0.08); }
-
-.bnav { display:flex; background:rgba(0,0,0,0.95); padding:8px 0 calc(8px + var(--sab)); border-top:1px solid rgba(255,255,255,0.1); }
-.nb { flex:1; text-align:center; padding:8px 4px; color:#888; cursor:pointer; }
-.nb.on { color:var(--green); }
-
-/* Karta */
-#map { height:100%; background:#0a0a0f; }
-.zone-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:6px; padding:12px; }
-.zone { aspect-ratio:1; background:#1a1a24; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:22px; cursor:pointer; border:2px solid transparent; transition:all .2s; }
-.zone.mine { border-color:var(--green); box-shadow:0 0 12px var(--green); }
-.zone.friend { border-color:var(--purple); opacity:0.85; }
+:root{--bg:#000;--s2:#111118;--green:#00ff88;--pink:#ff3377;--gold:#ffcc00;--purple:#aa66ff;--teal:#00ddcc;--sat:env(safe-area-inset-top,0px);--sab:env(safe-area-inset-bottom,0px);--ff-head:'Syne',sans-serif}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:#fff;height:100vh;overflow:hidden}
+#app{max-width:430px;margin:auto;height:100%;display:flex;flex-direction:column;position:relative}
+.topbar{position:absolute;top:0;left:0;right:0;height:calc(52px + var(--sat));padding-top:var(--sat);display:flex;align-items:center;justify-content:space-between;padding:0 16px;background:rgba(0,0,0,0.9);z-index:100}
+.logo{font-family:var(--ff-head);font-size:24px;font-weight:900;letter-spacing:-1px}
+.main{flex:1;overflow:hidden;position:relative;padding-top:52px}
+.view{position:absolute;inset:0;display:none;flex-direction:column;overflow-y:auto;background:var(--bg)}
+.view.active{display:flex}
+.card{background:var(--s2);margin:12px 16px;padding:16px;border-radius:18px;border:1px solid rgba(255,255,255,0.08)}
+.bnav{display:flex;background:rgba(0,0,0,0.95);padding:8px 0 calc(8px + var(--sab));border-top:1px solid rgba(255,255,255,0.1)}
+.nb{flex:1;text-align:center;padding:8px 4px;color:#888;cursor:pointer}
+.nb.on{color:var(--green)}
+#map{height:100%;background:#0a0a0f}
+.zone-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;padding:12px}
+.zone{aspect-ratio:1;background:#1a1a24;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;border:2px solid transparent;transition:all .2s}
+.zone.mine{border-color:var(--green);box-shadow:0 0 12px var(--green)}
 </style>
 </head>
 <body>
 <div id="app">
     <div class="topbar">
         <div class="logo">KARMA <span>🐾</span></div>
-        <div>⚡ <span id="xp">920</span> &nbsp; 💎 <span id="kc">156</span></div>
+        <div>⚡ <span id="xp">920</span> 💎 <span id="kc">156</span></div>
     </div>
 
     <div class="main">
-        <!-- PET -->
         <div id="view-pet" class="view active">
-            <div style="text-align:center;padding:40px 20px;">
+            <div style="text-align:center;padding:40px 20px">
                 <h1 style="font-family:var(--ff-head)">Level <span id="lvl">5</span></h1>
-                <div id="pet" onclick="petTap()" style="font-size:140px;cursor:pointer;margin:30px 0;">🐾</div>
+                <div id="pet" onclick="petTap()" style="font-size:140px;cursor:pointer;margin:30px 0">🐾</div>
                 <h2>Luna</h2>
                 <p style="color:var(--green)">Mood: Legendary ✨</p>
             </div>
-            <div style="display:flex;gap:12px;justify-content:center;padding:0 20px;">
-                <button onclick="feedPet()" style="background:var(--green);color:#000;padding:14px 32px;border:none;border-radius:50px;font-weight:800;">🍎 Mata</button>
-                <button onclick="playPet()" style="background:var(--purple);padding:14px 32px;border:none;border-radius:50px;font-weight:800;">🎾 Lek</button>
+            <div style="display:flex;gap:12px;justify-content:center;padding:0 20px">
+                <button onclick="feedPet()" style="background:var(--green);color:#000;padding:14px 32px;border:none;border-radius:50px;font-weight:800">🍎 Mata</button>
+                <button onclick="playPet()" style="background:var(--purple);padding:14px 32px;border:none;border-radius:50px;font-weight:800">🎾 Lek</button>
             </div>
         </div>
 
-        <!-- FLASH -->
         <div id="view-flash" class="view">
-            <div style="padding:20px;text-align:center;">
+            <div style="padding:20px;text-align:center">
                 <h2>Flash Feed</h2>
-                <button onclick="postFlash()" style="margin:20px auto;width:90%;background:linear-gradient(90deg,var(--pink),var(--purple));padding:16px;border:none;border-radius:50px;color:white;font-weight:800;">📹 Posta Flash</button>
+                <button onclick="postFlash()" style="margin:20px auto;width:90%;background:linear-gradient(90deg,var(--pink),var(--purple));padding:16px;border:none;border-radius:50px;color:white;font-weight:800">📹 Posta Flash</button>
                 <div id="flash-list"></div>
             </div>
         </div>
 
-        <!-- UPPDRAG -->
         <div id="view-uppdrag" class="view">
-            <div style="padding:20px;">
+            <div style="padding:20px">
                 <h2>Dagens Uppdrag</h2>
                 <div class="card" onclick="finishQuest(0)">Posta flash → +60 XP</div>
                 <div class="card" onclick="finishQuest(1)">Gå 8000 steg → +80 XP</div>
-                <div class="card" onclick="finishQuest(2)">Prata med någon IRL → +50 XP</div>
+                <div class="card" onclick="finishQuest(2)">IRL samtal → +50 XP</div>
             </div>
         </div>
 
-        <!-- KARTA + TERRITORIUM -->
         <div id="view-map" class="view">
             <div id="map"></div>
             <div class="card">
@@ -93,87 +78,87 @@ body { font-family:'DM Sans',sans-serif; background:var(--bg); color:#fff; heigh
         <div class="nb" onclick="switchView(0)">🐾 Pet</div>
         <div class="nb" onclick="switchView(1)">⚡ Flash</div>
         <div class="nb" onclick="switchView(2)">🎯 Uppdrag</div>
-        <div class="nb on" onclick="switchView(3)">🗺️ Karta</div>
+        <div class="nb" onclick="switchView(3)">🗺️ Karta</div>
     </div>
 </div>
 
 <script>
-// State
-let G = { level:5, xp:920, kc:156, flashes:[] };
+let G = {level:5, xp:920, kc:156, flashes:[]};
+let map;
 
-// View switching
-function switchView(n) {
-    document.querySelectorAll('.view').forEach((v,i) => v.classList.toggle('active', i===n));
-    if (n === 3) initMap();
+// Load from localStorage
+function loadData() {
+    const saved = localStorage.getItem('karmaData');
+    if (saved) G = JSON.parse(saved);
 }
 
-// Pet
-function petTap() {
-    const p = document.getElementById('pet');
-    p.style.transform = 'scale(1.45) rotate(15deg)';
-    setTimeout(() => p.style.transform = '', 280);
-    G.xp += 30;
-    updateUI();
-}
-function feedPet() { G.xp += 50; updateUI(); }
-function playPet() { G.xp += 40; G.kc += 15; updateUI(); }
-
-// Flash
-function postFlash() {
-    let txt = prompt("Vad visar din flash?", "Promenad i solnedgången 🌅");
-    if (!txt) return;
-    G.flashes.unshift({text:txt, time:"nu"});
-    G.xp += 70; G.kc += 20;
-    renderFlashes();
-    updateUI();
-}
-function renderFlashes() {
-    let html = G.flashes.map(f => `<div class="card">${f.text} <small>(${f.time})</small></div>`).join('');
-    document.getElementById('flash-list').innerHTML = html;
+// Save to localStorage
+function saveData() {
+    localStorage.setItem('karmaData', JSON.stringify(G));
 }
 
-// Uppdrag
-function finishQuest(i) {
-    const xp = [60,80,50][i];
-    G.xp += xp;
-    updateUI();
-    alert("Uppdrag klart! +" + xp + " XP");
+function switchView(n){
+    document.querySelectorAll('.view').forEach((v,i)=>v.classList.toggle('active',i===n));
+    if(n===3) initMap();
 }
 
-function updateUI() {
+function petTap(){
+    const p=document.getElementById('pet');
+    p.style.transform='scale(1.45) rotate(15deg)';
+    setTimeout(()=>p.style.transform='',280);
+    G.xp+=30;
+    updateUI(); saveData();
+}
+function feedPet(){G.xp+=50;updateUI();saveData()}
+function playPet(){G.xp+=40;G.kc+=15;updateUI();saveData()}
+
+function postFlash(){
+    let txt=prompt("Vad visar din flash?","Promenad i solnedgången 🌅");
+    if(!txt)return;
+    G.flashes.unshift({text:txt,time:"nu"});
+    G.xp+=70;G.kc+=20;
+    renderFlashes();updateUI();saveData();
+}
+function renderFlashes(){
+    let html=G.flashes.map(f=>`<div class="card">${f.text} <small>(${f.time})</small></div>`).join('');
+    document.getElementById('flash-list').innerHTML=html;
+}
+
+function finishQuest(i){
+    const xp=[60,80,50][i];
+    G.xp+=xp;
+    updateUI();saveData();
+    alert("Uppdrag klart! +"+xp+" XP");
+}
+
+function updateUI(){
     document.getElementById('xp').textContent = G.xp;
     document.getElementById('kc').textContent = G.kc;
     document.getElementById('lvl').textContent = G.level;
 }
 
-// Karta + Territorium
-let map;
-function initMap() {
-    if (map) return;
-    map = L.map('map', { zoomControl:false }).setView([59.3, 18.0], 13);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap'
-    }).addTo(map);
-
-    // Zone grid
-    const grid = document.getElementById('zone-grid');
-    grid.innerHTML = '';
-    const zones = ['🌲','🏙️','🏔️','🏖️','🌊','🏛️','🌉','🛤️','🏪','🌳'];
-    for (let i = 0; i < 20; i++) {
-        const z = document.createElement('div');
-        z.className = 'zone';
-        z.textContent = zones[i % zones.length];
-        if (i % 3 === 0) z.classList.add('mine');
-        z.onclick = () => alert('Territorium ' + z.textContent + ' erövrat!');
+function initMap(){
+    if(map)return;
+    map=L.map('map',{zoomControl:false}).setView([59.3,18.0],13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    const grid=document.getElementById('zone-grid');
+    grid.innerHTML='';
+    const zones=['🌲','🏙️','🏔️','🏖️','🌊','🏛️','🌉','🛤️','🏪','🌳'];
+    for(let i=0;i<25;i++){
+        const z=document.createElement('div');
+        z.className='zone';
+        z.textContent=zones[i%zones.length];
+        if(i%3===0)z.classList.add('mine');
+        z.onclick=()=>alert('Territorium erövrat!');
         grid.appendChild(z);
     }
 }
 
-// Init
-window.onload = () => {
+window.onload=()=>{
+    loadData();
     updateUI();
     renderFlashes();
-    console.log("%cKARMA — Med karta & territorium", "color:#00ff88;font-weight:bold");
+    console.log("%cKARMA — Med lokal lagring (localStorage)", "color:#00ff88;font-weight:bold");
 };
 </script>
 </body>
