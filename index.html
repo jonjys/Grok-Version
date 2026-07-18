@@ -8,50 +8,36 @@
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #000;
-            --s1: #0a0a0f;
-            --s2: #111118;
-            --s3: #1a1a24;
-            --green: #00ff88;
-            --pink: #ff3377;
-            --gold: #ffcc00;
-            --purple: #aa66ff;
-            --teal: #00ddcc;
-            --sat: env(safe-area-inset-top, 0px);
-            --sab: env(safe-area-inset-bottom, 0px);
-            --ff-head: 'Syne', sans-serif;
-            --ff-body: 'DM Sans', sans-serif;
+            --bg: #000; --s1: #0a0a0f; --s2: #111118; --s3: #1a1a24;
+            --green: #00ff88; --pink: #ff3377; --gold: #ffcc00; --purple: #aa66ff; --teal: #00ddcc;
+            --sat: env(safe-area-inset-top, 0px); --sab: env(safe-area-inset-bottom, 0px);
+            --ff-head: 'Syne', sans-serif; --ff-body: 'DM Sans', sans-serif;
         }
-
         * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
         html, body { height:100%; width:100%; overflow:hidden; background:var(--bg); color:#f2f2fa; font-family:var(--ff-body); }
 
         #app { max-width:430px; margin:0 auto; height:100%; display:flex; flex-direction:column; position:relative; background:var(--bg); }
 
         .topbar {
-            position:absolute; top:0; left:0; right:0;
-            height:calc(52px + var(--sat));
-            padding-top:var(--sat);
-            display:flex; align-items:center; justify-content:space-between;
-            padding:0 16px;
-            background:linear-gradient(to bottom, rgba(0,0,0,0.95), transparent);
-            z-index:200;
+            position:absolute; top:0; left:0; right:0; height:calc(52px + var(--sat));
+            padding-top:var(--sat); display:flex; align-items:center; justify-content:space-between;
+            padding:0 16px; background:linear-gradient(to bottom, rgba(0,0,0,0.95), transparent); z-index:200;
         }
         .logo { font-family:var(--ff-head); font-size:24px; font-weight:900; letter-spacing:-1px; }
         .logo span { color:var(--green); }
 
         .main { flex:1; overflow:hidden; position:relative; padding-top:52px; }
-
         .view { position:absolute; inset:0; display:none; flex-direction:column; overflow-y:auto; background:var(--bg); }
         .view.active { display:flex; }
 
-        /* Bottom Nav */
+        .card {
+            background:var(--s2); border-radius:18px; margin:12px 16px; padding:16px;
+            border:1px solid rgba(255,255,255,0.06);
+        }
+
         .bnav {
-            display:flex; align-items:center;
-            background:rgba(0,0,0,0.97); backdrop-filter:blur(32px);
-            border-top:1px solid rgba(255,255,255,0.08);
-            padding:8px 0 calc(8px + var(--sab));
-            z-index:200;
+            display:flex; align-items:center; background:rgba(0,0,0,0.97); backdrop-filter:blur(32px);
+            border-top:1px solid rgba(255,255,255,0.08); padding:8px 0 calc(8px + var(--sab)); z-index:200;
         }
         .nb {
             flex:1; display:flex; flex-direction:column; align-items:center; gap:4px;
@@ -68,36 +54,45 @@
         <div class="topbar">
             <div class="logo">KARMA <span>🐾</span></div>
             <div style="display:flex; gap:12px; font-size:18px; font-weight:700;">
-                <span>⚡ <span id="xp-val">680</span></span>
-                <span style="color:var(--gold)">💎 <span id="kc-val">42</span></span>
+                <span>⚡ <span id="xp-val">850</span></span>
+                <span style="color:var(--gold)">💎 <span id="kc-val">124</span></span>
             </div>
         </div>
 
-        <!-- Views -->
+        <!-- Main -->
         <div class="main">
             <!-- PET -->
             <div id="view-pet" class="view active">
-                <div style="text-align:center; padding:30px 20px;">
-                    <h1 style="font-family:var(--ff-head); font-size:32px;">Level <span id="level-val">3</span></h1>
-                    <div id="pet-emoji" onclick="petTap()" style="font-size:120px; margin:20px 0; cursor:pointer; transition:0.3s;">🐾</div>
+                <div style="text-align:center; padding:40px 20px 20px;">
+                    <h1 style="font-family:var(--ff-head); font-size:32px;">Level <span id="level-val">5</span></h1>
+                    <div id="pet-emoji" onclick="petTap()" style="font-size:140px; margin:30px 0; cursor:pointer; transition:0.3s;">🐾</div>
                     <h2 id="pet-name" style="font-size:26px;">Luna</h2>
-                    <p id="pet-mood" style="color:var(--green); font-weight:700;">Mood: Happy ✨</p>
+                    <p id="pet-mood" style="color:var(--green); font-weight:700;">Mood: Epic ✨</p>
                 </div>
-
-                <div style="padding:0 20px; display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
-                    <button onclick="feedPet()" style="background:var(--green); color:#000; padding:12px 24px; border:none; border-radius:999px; font-weight:800;">🍎 Mata</button>
-                    <button onclick="playWithPet()" style="background:var(--purple); color:white; padding:12px 24px; border:none; border-radius:999px; font-weight:800;">🎾 Lek</button>
+                <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap; padding:0 20px;">
+                    <button onclick="feedPet()" style="background:var(--green); color:#000; padding:14px 32px; border:none; border-radius:999px; font-weight:800;">🍎 Mata</button>
+                    <button onclick="playWithPet()" style="background:var(--purple); color:white; padding:14px 32px; border:none; border-radius:999px; font-weight:800;">🎾 Lek</button>
                 </div>
             </div>
 
             <!-- FLASH -->
             <div id="view-flash" class="view">
-                <div style="padding:30px 20px; text-align:center;">
-                    <h2>Flash Feed</h2>
-                    <button onclick="postFlash()" style="margin:30px 0; background:linear-gradient(135deg, var(--pink), var(--purple)); color:white; border:none; padding:16px 50px; border-radius:999px; font-size:17px; font-weight:800;">
-                        📹 Posta Flash (1-5 sek)
+                <div style="padding:20px;">
+                    <h2 style="text-align:center; margin-bottom:20px;">Flash Feed</h2>
+                    <button onclick="postFlash()" style="width:100%; background:linear-gradient(135deg,var(--pink),var(--purple)); color:white; border:none; padding:18px; border-radius:999px; font-size:17px; font-weight:800; margin-bottom:20px;">
+                        📹 Posta Flash
                     </button>
-                    <div id="flash-posts" style="text-align:left;"></div>
+                    <div id="flash-posts"></div>
+                </div>
+            </div>
+
+            <!-- UPPDRAG -->
+            <div id="view-uppdrag" class="view">
+                <div style="padding:20px;">
+                    <h2 style="margin-bottom:16px;">Dagens Uppdrag</h2>
+                    <div class="card" onclick="completeQuest(0)">Posta en flash<br><small>+50 XP • +12 KC</small></div>
+                    <div class="card" onclick="completeQuest(1)">Gå 8000 steg<br><small>+70 XP • +20 KC</small></div>
+                    <div class="card" onclick="completeQuest(2)">Prata med en vän IRL<br><small>+40 XP • +10 KC</small></div>
                 </div>
             </div>
         </div>
@@ -106,17 +101,16 @@
         <div class="bnav">
             <div class="nb on" onclick="switchView('view-pet')"><div class="ni">🐾</div><div class="nl">Pet</div></div>
             <div class="nb" onclick="switchView('view-flash')"><div class="ni">⚡</div><div class="nl">Flash</div></div>
-            <div class="nb" onclick="alert('Uppdrag kommer i nästa uppdatering!')"><div class="ni">🎯</div><div class="nl">Uppdrag</div></div>
+            <div class="nb" onclick="switchView('view-uppdrag')"><div class="ni">🎯</div><div class="nl">Uppdrag</div></div>
         </div>
     </div>
 
     <script>
         let G = {
-            level: 3,
-            xp: 680,
-            kc: 42,
+            level: 5,
+            xp: 850,
+            kc: 124,
             petName: "Luna",
-            mood: "happy",
             flashes: []
         };
 
@@ -126,47 +120,38 @@
         }
 
         function petTap() {
-            const emoji = document.getElementById('pet-emoji');
-            emoji.style.transform = 'scale(1.35) rotate(12deg)';
-            setTimeout(() => emoji.style.transform = '', 280);
-            G.xp += 18;
+            const e = document.getElementById('pet-emoji');
+            e.style.transform = 'scale(1.45) rotate(20deg)';
+            setTimeout(() => e.style.transform = '', 280);
+            G.xp += 25;
             updateStats();
         }
 
-        function feedPet() {
-            G.xp += 35;
-            G.mood = "happy";
-            document.getElementById('pet-mood').textContent = "Mood: Very Happy 🍎";
-            updateStats();
-        }
-
-        function playWithPet() {
-            G.xp += 28;
-            G.kc += 8;
-            updateStats();
-        }
+        function feedPet() { G.xp += 45; updateStats(); }
+        function playWithPet() { G.xp += 38; G.kc += 12; updateStats(); }
 
         function postFlash() {
-            const text = prompt("Vad händer i din flash? (kort beskrivning)", "Springer i parken 🏃");
-            if (!text) return;
-            
-            G.flashes.unshift({ text, time: "nu" });
-            G.xp += 55;
-            G.kc += 12;
-            
+            const txt = prompt("Beskriv din flash (1-5 sek):", "Dansar i regnet 🌧️");
+            if (!txt) return;
+            G.flashes.unshift({text: txt, time: "nu"});
+            G.xp += 65;
+            G.kc += 18;
             renderFlashes();
             updateStats();
-            alert("✅ Flash postad! +55 XP");
         }
 
         function renderFlashes() {
-            const container = document.getElementById('flash-posts');
-            container.innerHTML = G.flashes.map(f => `
-                <div style="background:#111; padding:14px; margin:10px 0; border-radius:16px;">
-                    <small>${f.time}</small><br>
-                    ${f.text}
-                </div>
-            `).join('');
+            const c = document.getElementById('flash-posts');
+            c.innerHTML = G.flashes.map(f => `<div class="card">${f.text} <small>(${f.time})</small></div>`).join('');
+        }
+
+        function completeQuest(i) {
+            const xp = [50,70,40][i];
+            const kc = [12,20,10][i];
+            G.xp += xp;
+            G.kc += kc;
+            updateStats();
+            alert(`Uppdrag klart! +${xp} XP +${kc} KC`);
         }
 
         function updateStats() {
@@ -175,11 +160,10 @@
             document.getElementById('level-val').textContent = G.level;
         }
 
-        // Init
         window.onload = () => {
             updateStats();
             renderFlashes();
-            console.log("%cKARMA v2.1 – Fortsätter byggas stegvis", "color:#00ff88; font-weight:bold");
+            console.log("%cKARMA — Full förbättrad version klar!", "color:#00ff88; font-size:16px; font-weight:bold");
         };
     </script>
 </body>
