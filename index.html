@@ -1,82 +1,182 @@
 <!DOCTYPE html>
 <html lang="sv">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<meta name="theme-color" content="#000000">
-<title>KARMA</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-:root {
-  --bg: #000; --s1: #0a0a0f; --s2: #111118; --s3: #1a1a24; --s4: #242432;
-  --line: rgba(255,255,255,.08); --t1: #f2f2fa; --t2: #888; --t3: #444;
-  --green: #00ff88; --blue: #4488ff; --pink: #ff3377; --gold: #ffcc00;
-  --purple: #aa66ff; --red: #ff4455; --teal: #00ddcc;
-  --sat: env(safe-area-inset-top, 0px); --sab: env(safe-area-inset-bottom, 0px);
-  --ff-head: 'Syne', sans-serif; --ff-body: 'DM Sans', sans-serif;
-}
-* { margin:0; padding:0; box-sizing:border-box; }
-html, body { height:100%; width:100%; overflow:hidden; background:var(--bg); color:var(--t1); font-family:var(--ff-body); }
-#app { max-width:430px; margin:0 auto; height:100%; display:flex; flex-direction:column; position:relative; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#000000">
+    <title>KARMA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #000;
+            --s1: #0a0a0f;
+            --s2: #111118;
+            --s3: #1a1a24;
+            --green: #00ff88;
+            --pink: #ff3377;
+            --gold: #ffcc00;
+            --purple: #aa66ff;
+            --teal: #00ddcc;
+            --sat: env(safe-area-inset-top, 0px);
+            --sab: env(safe-area-inset-bottom, 0px);
+            --ff-head: 'Syne', sans-serif;
+            --ff-body: 'DM Sans', sans-serif;
+        }
 
-/* Topbar, Bottom Nav, Pet Float etc. behålls likadant men renare */
-.topbar, .bnav, .pet-float { /* ... dina befintliga stilar ... */ }
+        * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+        html, body { height:100%; width:100%; overflow:hidden; background:var(--bg); color:#f2f2fa; font-family:var(--ff-body); }
 
-/* Exempel på en view */
-.view { display:none; flex-direction:column; height:100%; overflow-y:auto; }
-.view.active { display:flex; }
+        #app {
+            max-width: 430px;
+            margin: 0 auto;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            background: var(--bg);
+        }
 
-/* Din pet-styling, flash feed osv. kan behållas */
-</style>
+        /* Top Bar */
+        .topbar {
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: calc(52px + var(--sat));
+            padding-top: var(--sat);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.95), transparent);
+            z-index: 200;
+        }
+        .logo { font-family: var(--ff-head); font-size: 24px; font-weight: 900; letter-spacing: -1px; }
+        .logo span { color: var(--green); }
+
+        /* Main */
+        .main { flex: 1; overflow: hidden; position: relative; padding-top: 52px; }
+
+        .view {
+            position: absolute;
+            inset: 0;
+            display: none;
+            flex-direction: column;
+            overflow-y: auto;
+            background: var(--bg);
+        }
+        .view.active { display: flex; }
+
+        /* Bottom Nav */
+        .bnav {
+            display: flex;
+            align-items: center;
+            background: rgba(0,0,0,0.97);
+            backdrop-filter: blur(32px);
+            border-top: 1px solid rgba(255,255,255,0.08);
+            padding: 8px 0 calc(8px + var(--sab));
+            z-index: 200;
+        }
+        .nb {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 6px 0;
+            cursor: pointer;
+            color: #888;
+        }
+        .nb.on { color: var(--green); }
+        .nb .ni { font-size: 26px; transition: all 0.2s; }
+        .nb.on .ni { transform: scale(1.15); }
+
+        /* Pet Float */
+        .pet-float {
+            position: fixed;
+            right: 16px;
+            bottom: calc(85px + var(--sab));
+            z-index: 150;
+            cursor: pointer;
+        }
+        .pf-body {
+            width: 62px; height: 62px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #1a1a24, #0f0f18);
+            border: 3px solid var(--green);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 34px;
+            box-shadow: 0 0 25px rgba(0,255,136,0.4);
+            transition: transform 0.3s;
+        }
+        .pf-body:active { transform: scale(0.9); }
+    </style>
 </head>
 <body>
-<div id="app">
-  <!-- Topbar -->
-  <div class="topbar">...</div>
+    <div id="app">
+        <!-- Top Bar -->
+        <div class="topbar">
+            <div class="logo">KARMA <span>🐾</span></div>
+            <div style="display:flex; gap:12px; font-size:20px;">
+                <span>⚡ 420</span>
+                <span style="color:var(--gold)">💎 0</span>
+            </div>
+        </div>
 
-  <!-- Main Content -->
-  <div class="main">
-    <!-- PET VIEW -->
-    <div id="view-pet" class="view active"> ... din pet-logik ... </div>
-    
-    <!-- FLASH FEED -->
-    <div id="view-flash" class="view"> ... </div>
-    
-    <!-- Fler views som du vill -->
-  </div>
+        <!-- Main Views -->
+        <div class="main">
+            <!-- PET VIEW -->
+            <div id="view-pet" class="view active">
+                <div style="text-align:center; padding:30px 20px 10px;">
+                    <h1 style="font-family:var(--ff-head); font-size:28px; margin-bottom:8px;">Level <span id="pet-level">1</span></h1>
+                    <div id="pet-emoji" class="pf-body" style="margin:20px auto; width:120px; height:120px; font-size:70px;">🐾</div>
+                    <p id="pet-name" style="font-size:22px; font-weight:700;">Luna</p>
+                </div>
+            </div>
 
-  <!-- Bottom Nav -->
-  <div class="bnav"> ... </div>
-</div>
+            <!-- FLASH FEED -->
+            <div id="view-flash" class="view">
+                <div style="padding:20px; text-align:center;">
+                    <h2>Flash Feed</h2>
+                    <p style="color:#888; margin:20px 0;">Posta din 1–5 sek video här</p>
+                    <button onclick="fakePostFlash()" style="background:var(--pink); color:white; border:none; padding:14px 32px; border-radius:999px; font-weight:700;">+ Ny Flash</button>
+                </div>
+            </div>
+        </div>
 
-<script>
-// Global state
-let G = {
-  level: 1,
-  xp: 0,
-  kc: 500,
-  coins: 1247,
-  pet: { name: "Luna", emoji: "🐾", mood: "happy" }
-};
+        <!-- Bottom Navigation -->
+        <div class="bnav">
+            <div class="nb on" onclick="switchView('view-pet')"><div class="ni">🐾</div><div class="nl">Pet</div></div>
+            <div class="nb" onclick="switchView('view-flash')"><div class="ni">⚡</div><div class="nl">Flash</div></div>
+            <div class="nb" onclick="alert('Uppdrag - Kommer snart!')"><div class="ni">🎯</div><div class="nl">Uppdrag</div></div>
+            <div class="nb" onclick="alert('Live Karta - Kommer snart!')"><div class="ni">🗺️</div><div class="nl">Karta</div></div>
+        </div>
+    </div>
 
-// Exempel på data-driven aktiviteter
-const dailyActivities = [
-  { id:1, title:"Filma din frukost", reward: {xp:50, kc:5}, type:"flash" },
-  // ... fler
-];
+    <script>
+        let G = {
+            level: 3,
+            xp: 680,
+            petName: "Luna",
+            petEmoji: "🐾"
+        };
 
-// Render-funktioner
-function renderPet() { /* din pet-logik */ }
-function switchView(viewId) {
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.getElementById(viewId).classList.add('active');
-}
+        function switchView(viewId) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active');
+        }
 
-// Init
-document.addEventListener('DOMContentLoaded', () => {
-  renderPet();
-  // ... fler init
-});
-</script>
+        function fakePostFlash() {
+            alert("✅ Flash postad! +50 XP & +10 KC");
+            G.xp += 50;
+            console.log("XP:", G.xp);
+        }
+
+        // Init
+        window.onload = () => {
+            console.log("%cKARMA v2.0 - Byggs steg för steg med Grok", "color:#00ff88; font-size:14px; font-weight:bold");
+            document.getElementById('pet-level').textContent = G.level;
+        };
+    </script>
 </body>
 </html>
