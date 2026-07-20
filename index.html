@@ -12,8 +12,6 @@
     --pink: #ff3377;
     --gold: #ffcc00;
     --purple: #aa66ff;
-    --sat: env(safe-area-inset-top, 0px);
-    --sab: env(safe-area-inset-bottom, 0px);
 }
 * { margin:0; padding:0; box-sizing:border-box; }
 body { font-family:'DM Sans',sans-serif; background:var(--bg); color:#fff; height:100vh; overflow:hidden; }
@@ -21,19 +19,24 @@ body { font-family:'DM Sans',sans-serif; background:var(--bg); color:#fff; heigh
 #app { max-width:430px; margin:0 auto; height:100%; display:flex; flex-direction:column; position:relative; }
 
 .topbar {
-    position:absolute; top:0; left:0; right:0; height:calc(52px + var(--sat));
-    padding-top:var(--sat); display:flex; align-items:center; justify-content:space-between;
+    position:absolute; top:0; left:0; right:0; height:60px;
+    display:flex; align-items:center; justify-content:space-between;
     padding:0 16px; background:rgba(0,0,0,0.95); z-index:200;
 }
 .logo { font-size:26px; font-weight:900; letter-spacing:-1px; }
 
-.main { flex:1; overflow:hidden; position:relative; padding-top:52px; }
+.main { flex:1; overflow:hidden; position:relative; padding-top:60px; }
 .view { position:absolute; inset:0; display:none; flex-direction:column; overflow-y:auto; background:var(--bg); }
 .view.active { display:flex; }
 
+.pet-container {
+    width:240px; height:240px; margin:30px auto; position:relative;
+}
+#pet-canvas { width:100%; height:100%; border-radius:50%; box-shadow:0 0 80px rgba(0,255,136,0.6); }
+
 .bnav {
-    display:flex; align-items:center; background:rgba(0,0,0,0.97); backdrop-filter:blur(32px);
-    border-top:1px solid rgba(255,255,255,0.1); padding:8px 0 calc(8px + var(--sab)); z-index:200;
+    display:flex; background:rgba(0,0,0,0.97); backdrop-filter:blur(32px);
+    border-top:1px solid rgba(255,255,255,0.1); padding:8px 0 calc(8px + env(safe-area-inset-bottom));
 }
 .nb {
     flex:1; display:flex; flex-direction:column; align-items:center; gap:4px;
@@ -42,9 +45,6 @@ body { font-family:'DM Sans',sans-serif; background:var(--bg); color:#fff; heigh
 .nb.on { color:var(--green); }
 .nb .ni { font-size:28px; transition:all .2s; }
 .nb.on .ni { transform:scale(1.2); }
-
-.pet-area { text-align:center; padding:40px 20px; }
-#pet-canvas { width:220px; height:220px; margin:30px auto; border-radius:50%; box-shadow:0 0 60px rgba(0,255,136,0.5); }
 </style>
 </head>
 <body>
@@ -56,11 +56,13 @@ body { font-family:'DM Sans',sans-serif; background:var(--bg); color:#fff; heigh
 
     <div class="main">
         <div id="view-pet" class="view active">
-            <div class="pet-area">
-                <h1 style="font-size:36px">Level 5</h1>
-                <canvas id="pet-canvas" width="220" height="220"></canvas>
+            <div style="text-align:center;padding:20px">
+                <h1>Level 5</h1>
+                <div class="pet-container">
+                    <canvas id="pet-canvas" width="240" height="240"></canvas>
+                </div>
                 <h2>Luna</h2>
-                <p style="color:var(--green);font-weight:700">Mood: Legendary ✨</p>
+                <p style="color:var(--green)">Mood: Legendary ✨</p>
             </div>
             <div style="display:flex;gap:15px;justify-content:center;padding:0 20px">
                 <button onclick="feedPet()" style="background:var(--green);color:#000;padding:16px 40px;border:none;border-radius:50px;font-weight:800">🍎 Mata</button>
@@ -78,130 +80,47 @@ body { font-family:'DM Sans',sans-serif; background:var(--bg); color:#fff; heigh
 </div>
 
 <script>
-// WebGL Shader
+// WebGL2 + Vertex Deformation Shader
 let canvas, gl, program, startTime;
 
-function initWebGL() {
+function initWebGL2() {
     canvas = document.getElementById('pet-canvas');
-    gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-    if (!gl) return;
+    gl = canvas.getContext('webgl2');
+    if (!gl) {
+        console.error("WebGL2 stöds inte");
+        return;
+    }
 
-    const vs = `attribute vec4 aPosition; void main(){gl_Position = aPosition;}`;
-    const fs = `
-        precision mediump float;
-        uniform float uTime;
-        uniform vec2 uRes;
+    const vsSource = `#version 300 es
+        in vec4 aPosition;
+        out vec2 vUv;
         void main() {
-            vec2 uv = (gl_FragCoord.xy - uRes * 0.5) / min(uRes.x, uRes.y);
-            float d = length(uv);
-            float angle = atan(uv.y, uv.x);
-            float wave = sin(uTime * 5.0 + d * 20.0 + angle * 8.0) * 0.5 + 0.5;
-            vec3 color = mix(vec3(0.0, 0.95, **HÄR ÄR DEN MED WEBGL-EFFEKTER PÅ PET-SKÄRMEN**
+            vUv = aPosition.xy * 0.5 + 0.5;
+            gl_Position = aPosition;
+        }
+    `;
 
-Uppdatera din `index.html` med denna kompletta kod (den innehåller allt):
-
-```html
-<!DOCTYPE html>
-<html lang="sv">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>KARMA</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-:root {
-    --bg: #000;
-    --green: #00ff88;
-    --pink: #ff3377;
-    --gold: #ffcc00;
-    --purple: #aa66ff;
-    --sat: env(safe-area-inset-top, 0px);
-    --sab: env(safe-area-inset-bottom, 0px);
-}
-* { margin:0; padding:0; box-sizing:border-box; }
-body { font-family:'DM Sans',sans-serif; background:var(--bg); color:#fff; height:100vh; overflow:hidden; }
-
-#app { max-width:430px; margin:0 auto; height:100%; display:flex; flex-direction:column; position:relative; }
-
-.topbar {
-    position:absolute; top:0; left:0; right:0; height:calc(52px + var(--sat));
-    padding-top:var(--sat); display:flex; align-items:center; justify-content:space-between;
-    padding:0 16px; background:rgba(0,0,0,0.95); z-index:200;
-}
-.logo { font-size:26px; font-weight:900; letter-spacing:-1px; }
-
-.main { flex:1; overflow:hidden; position:relative; padding-top:52px; }
-.view { position:absolute; inset:0; display:none; flex-direction:column; overflow-y:auto; background:var(--bg); }
-.view.active { display:flex; }
-
-.bnav {
-    display:flex; align-items:center; background:rgba(0,0,0,0.97); backdrop-filter:blur(32px);
-    border-top:1px solid rgba(255,255,255,0.1); padding:8px 0 calc(8px + var(--sab)); z-index:200;
-}
-.nb {
-    flex:1; display:flex; flex-direction:column; align-items:center; gap:4px;
-    padding:6px 0; cursor:pointer; color:#888;
-}
-.nb.on { color:var(--green); }
-.nb .ni { font-size:28px; transition:all .2s; }
-.nb.on .ni { transform:scale(1.2); }
-
-.pet-area { text-align:center; padding:40px 20px; }
-#pet-canvas { width:220px; height:220px; margin:30px auto; border-radius:50%; box-shadow:0 0 60px rgba(0,255,136,0.5); }
-</style>
-</head>
-<body>
-<div id="app">
-    <div class="topbar">
-        <div class="logo">KARMA <span>🐾</span></div>
-        <div>⚡ <span id="xp">1100</span> 💎 <span id="kc">186</span></div>
-    </div>
-
-    <div class="main">
-        <div id="view-pet" class="view active">
-            <div class="pet-area">
-                <h1 style="font-size:36px">Level 5</h1>
-                <canvas id="pet-canvas" width="220" height="220"></canvas>
-                <h2>Luna</h2>
-                <p style="color:var(--green);font-weight:700">Mood: Legendary ✨</p>
-            </div>
-            <div style="display:flex;gap:15px;justify-content:center;padding:0 20px">
-                <button onclick="feedPet()" style="background:var(--green);color:#000;padding:16px 40px;border:none;border-radius:50px;font-weight:800">🍎 Mata</button>
-                <button onclick="playPet()" style="background:var(--purple);padding:16px 40px;border:none;border-radius:50px;font-weight:800">🎾 Lek</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="bnav">
-        <div class="nb on">🐾 Pet</div>
-        <div class="nb">⚡ Flash</div>
-        <div class="nb">🎯 Uppdrag</div>
-        <div class="nb">🗺️ Karta</div>
-    </div>
-</div>
-
-<script>
-// WebGL Shader
-let canvas, gl, program, startTime;
-
-function initWebGL() {
-    canvas = document.getElementById('pet-canvas');
-    gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-    if (!gl) return;
-
-    const vs = `attribute vec4 aPosition; void main(){gl_Position = aPosition;}`;
-    const fs = `
+    const fsSource = `#version 300 es
         precision mediump float;
+        in vec2 vUv;
+        out vec4 fragColor;
         uniform float uTime;
-        uniform vec2 uRes;
+
         void main() {
-            vec2 uv = (gl_FragCoord.xy - uRes * 0.5) / min(uRes.x, uRes.y);
-            float d = length(uv);
-            float angle = atan(uv.y, uv.x);
-            float wave = sin(uTime * 5.0 + d * 20.0 + angle * 8.0) * 0.5 + 0.5;
-            vec3 color = mix(vec3(0.0, 0.95, 0.6), vec3(1.0, 0.7, 0.0), wave);
-            float alpha = 1.0 - smoothstep(0.6, 1.0, d);
-            gl_FragColor = vec4(color * (1.0 + wave * 0.8), alpha);
+            vec2 uv = vUv;
+            float t = uTime * 2.0;
+
+            // Vertex-like deformation via fragment
+            float wave = sin(t * 3.0 + uv.x * 12.0) * 0.1 + sin(t * 5.0 + uv.y * 8.0) * 0.1;
+            vec2 distorted = uv + vec2(wave * 0.1, wave * 0.15);
+
+            float dist = length(distorted - vec2(0.5));
+            float glow = exp(-dist * 4.0) * (sin(t * 6.0 + dist * 20.0) * 0.5 + 0.5);
+
+            vec3 color = mix(vec3(0.0, 0.95, 0.6), vec3(1.0, 0.7, 0.0), glow);
+            float alpha = 1.0 - smoothstep(0.5, 1.0, dist);
+
+            fragColor = vec4(color * (1.0 + glow * 1.5), alpha);
         }
     `;
 
@@ -213,8 +132,8 @@ function initWebGL() {
     }
 
     program = gl.createProgram();
-    gl.attachShader(program, createShader(gl.VERTEX_SHADER, vs));
-    gl.attachShader(program, createShader(gl.FRAGMENT_SHADER, fs));
+    gl.attachShader(program, createShader(gl.VERTEX_SHADER, vsSource));
+    gl.attachShader(program, createShader(gl.FRAGMENT_SHADER, fsSource));
     gl.linkProgram(program);
     gl.useProgram(program);
 
@@ -227,14 +146,12 @@ function initWebGL() {
     gl.vertexAttribPointer(pos, 2, gl.FLOAT, false, 0, 0);
 
     const timeLoc = gl.getUniformLocation(program, "uTime");
-    const resLoc = gl.getUniformLocation(program, "uRes");
 
     startTime = Date.now();
 
     function render() {
         const t = (Date.now() - startTime) / 1000;
         gl.uniform1f(timeLoc, t);
-        gl.uniform2f(resLoc, canvas.width, canvas.height);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
         requestAnimationFrame(render);
     }
@@ -245,8 +162,8 @@ function feedPet() { console.log("Mata"); }
 function playPet() { console.log("Lek"); }
 
 window.onload = () => {
-    initWebGL();
-    console.log("%cKARMA — WebGL Shader aktiv", "color:#00ff88;font-weight:bold");
+    initWebGL2();
+    console.log("%cKARMA — WebGL2 + Vertex Deformation klar", "color:#00ff88;font-weight:bold");
 };
 </script>
 </body>
