@@ -1,5 +1,5 @@
 // ======================
-// KARMA — Full App med Leaflet
+// KARMA — Full App med Leaflet + Geolocation
 // ======================
 
 let G = {
@@ -12,6 +12,7 @@ let G = {
 
 let currentView = 0;
 let mapInstance = null;
+let userMarker = null;
 
 // Ladda / Spara
 function loadData() {
@@ -143,7 +144,7 @@ function updateUI() {
     if (kcEl) kcEl.textContent = G.kc;
 }
 
-// Leaflet Karta
+// Leaflet Karta med användarposition
 function initLeafletMap() {
     const mapContainer = document.getElementById('map');
     if (!mapContainer) return;
@@ -157,6 +158,28 @@ function initLeafletMap() {
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap'
     }).addTo(mapInstance);
+
+    // Användarens position
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(position => {
+            const userLat = position.coords.latitude;
+            const userLng = position.coords.longitude;
+
+            mapInstance.setView([userLat, userLng], 15);
+
+            userMarker = L.marker([userLat, userLng], {
+                icon: L.divIcon({
+                    className: 'user-marker',
+                    html: '📍',
+                    iconSize: [30, 30]
+                })
+            }).addTo(mapInstance)
+              .bindPopup("Du är här!")
+              .openPopup();
+        }, () => {
+            alert("Kunde inte hämta din position. Använder standardplats.");
+        });
+    }
 
     // Exempelmarkör
     L.marker([59.3293, 18.0686]).addTo(mapInstance)
@@ -181,5 +204,5 @@ function initLeafletMap() {
 window.onload = () => {
     loadData();
     renderApp();
-    console.log("%cKARMA — Full app med Leaflet karta klar", "color:#00ff88;font-weight:bold");
+    console.log("%cKARMA — Med Leaflet + Geolocation klar", "color:#00ff88;font-weight:bold");
 };
