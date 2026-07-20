@@ -5,38 +5,41 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>KARMA</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
 :root {
     --bg: #000;
+    --s2: #111118;
     --green: #00ff88;
     --pink: #ff3377;
     --gold: #ffcc00;
     --purple: #aa66ff;
+    --teal: #00ddcc;
+    --sat: env(safe-area-inset-top, 0px);
+    --sab: env(safe-area-inset-bottom, 0px);
 }
-* { margin:0; padding:0; box-sizing:border-box; }
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 body { font-family:'DM Sans',sans-serif; background:var(--bg); color:#fff; height:100vh; overflow:hidden; }
 
-#app { max-width:430px; margin:0 auto; height:100%; display:flex; flex-direction:column; position:relative; }
+#app { max-width:430px; margin:0 auto; height:100%; display:flex; flex-direction:column; position:relative; background:var(--bg); }
 
 .topbar {
-    position:absolute; top:0; left:0; right:0; height:60px;
-    display:flex; align-items:center; justify-content:space-between;
+    position:absolute; top:0; left:0; right:0; height:calc(52px + var(--sat));
+    padding-top:var(--sat); display:flex; align-items:center; justify-content:space-between;
     padding:0 16px; background:rgba(0,0,0,0.95); z-index:200;
 }
-.logo { font-size:26px; font-weight:900; letter-spacing:-1px; }
+.logo { font-family:'Syne',sans-serif; font-size:26px; font-weight:900; letter-spacing:-1px; }
 
-.main { flex:1; overflow:hidden; position:relative; padding-top:60px; }
+.main { flex:1; overflow:hidden; position:relative; padding-top:52px; }
 .view { position:absolute; inset:0; display:none; flex-direction:column; overflow-y:auto; background:var(--bg); }
 .view.active { display:flex; }
 
-.pet-container {
-    width:240px; height:240px; margin:30px auto; position:relative;
-}
-#pet-canvas { width:100%; height:100%; border-radius:50%; box-shadow:0 0 80px rgba(0,255,136,0.6); }
+.card { background:var(--s2); margin:12px 16px; padding:16px; border-radius:18px; border:1px solid rgba(255,255,255,0.08); }
 
 .bnav {
-    display:flex; background:rgba(0,0,0,0.97); backdrop-filter:blur(32px);
-    border-top:1px solid rgba(255,255,255,0.1); padding:8px 0 calc(8px + env(safe-area-inset-bottom));
+    display:flex; align-items:center; background:rgba(0,0,0,0.97); backdrop-filter:blur(32px);
+    border-top:1px solid rgba(255,255,255,0.1); padding:8px 0 calc(8px + var(--sab)); z-index:200;
 }
 .nb {
     flex:1; display:flex; flex-direction:column; align-items:center; gap:4px;
@@ -45,125 +48,189 @@ body { font-family:'DM Sans',sans-serif; background:var(--bg); color:#fff; heigh
 .nb.on { color:var(--green); }
 .nb .ni { font-size:28px; transition:all .2s; }
 .nb.on .ni { transform:scale(1.2); }
+
+.pet-container { width:240px; height:240px; margin:30px auto; position:relative; }
+#pet-canvas { width:100%; height:100%; border-radius:50%; box-shadow:0 0 80px rgba(0,255,136,0.6); }
 </style>
 </head>
 <body>
-<div id="app">
-    <div class="topbar">
-        <div class="logo">KARMA <span>🐾</span></div>
-        <div>⚡ <span id="xp">1100</span> 💎 <span id="kc">186</span></div>
-    </div>
-
-    <div class="main">
-        <div id="view-pet" class="view active">
-            <div style="text-align:center;padding:20px">
-                <h1>Level 5</h1>
-                <div class="pet-container">
-                    <canvas id="pet-canvas" width="240" height="240"></canvas>
-                </div>
-                <h2>Luna</h2>
-                <p style="color:var(--green)">Mood: Legendary ✨</p>
-            </div>
-            <div style="display:flex;gap:15px;justify-content:center;padding:0 20px">
-                <button onclick="feedPet()" style="background:var(--green);color:#000;padding:16px 40px;border:none;border-radius:50px;font-weight:800">🍎 Mata</button>
-                <button onclick="playPet()" style="background:var(--purple);padding:16px 40px;border:none;border-radius:50px;font-weight:800">🎾 Lek</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="bnav">
-        <div class="nb on">🐾 Pet</div>
-        <div class="nb">⚡ Flash</div>
-        <div class="nb">🎯 Uppdrag</div>
-        <div class="nb">🗺️ Karta</div>
-    </div>
-</div>
-
+<div id="app"></div>
 <script>
-// WebGL2 + Vertex Deformation Shader
-let canvas, gl, program, startTime;
+// Full app logic
+let G = { level:5, xp:1100, kc:186, petName:"Luna", flashes:[] };
+let currentView = 0;
+let map = null;
 
-function initWebGL2() {
-    canvas = document.getElementById('pet-canvas');
-    gl = canvas.getContext('webgl2');
-    if (!gl) {
-        console.error("WebGL2 stöds inte");
-        return;
-    }
-
-    const vsSource = `#version 300 es
-        in vec4 aPosition;
-        out vec2 vUv;
-        void main() {
-            vUv = aPosition.xy * 0.5 + 0.5;
-            gl_Position = aPosition;
-        }
-    `;
-
-    const fsSource = `#version 300 es
-        precision mediump float;
-        in vec2 vUv;
-        out vec4 fragColor;
-        uniform float uTime;
-
-        void main() {
-            vec2 uv = vUv;
-            float t = uTime * 2.0;
-
-            // Vertex-like deformation via fragment
-            float wave = sin(t * 3.0 + uv.x * 12.0) * 0.1 + sin(t * 5.0 + uv.y * 8.0) * 0.1;
-            vec2 distorted = uv + vec2(wave * 0.1, wave * 0.15);
-
-            float dist = length(distorted - vec2(0.5));
-            float glow = exp(-dist * 4.0) * (sin(t * 6.0 + dist * 20.0) * 0.5 + 0.5);
-
-            vec3 color = mix(vec3(0.0, 0.95, 0.6), vec3(1.0, 0.7, 0.0), glow);
-            float alpha = 1.0 - smoothstep(0.5, 1.0, dist);
-
-            fragColor = vec4(color * (1.0 + glow * 1.5), alpha);
-        }
-    `;
-
-    function createShader(type, source) {
-        const shader = gl.createShader(type);
-        gl.shaderSource(shader, source);
-        gl.compileShader(shader);
-        return shader;
-    }
-
-    program = gl.createProgram();
-    gl.attachShader(program, createShader(gl.VERTEX_SHADER, vsSource));
-    gl.attachShader(program, createShader(gl.FRAGMENT_SHADER, fsSource));
-    gl.linkProgram(program);
-    gl.useProgram(program);
-
-    const buffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,1,-1,-1,1,1,1]), gl.STATIC_DRAW);
-
-    const pos = gl.getAttribLocation(program, "aPosition");
-    gl.enableVertexAttribArray(pos);
-    gl.vertexAttribPointer(pos, 2, gl.FLOAT, false, 0, 0);
-
-    const timeLoc = gl.getUniformLocation(program, "uTime");
-
-    startTime = Date.now();
-
-    function render() {
-        const t = (Date.now() - startTime) / 1000;
-        gl.uniform1f(timeLoc, t);
-        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-        requestAnimationFrame(render);
-    }
-    render();
+function loadData() {
+    const saved = localStorage.getItem('karmaData');
+    if (saved) Object.assign(G, JSON.parse(saved));
 }
 
-function feedPet() { console.log("Mata"); }
-function playPet() { console.log("Lek"); }
+function saveData() {
+    localStorage.setItem('karmaData', JSON.stringify(G));
+}
+
+function renderApp() {
+    const app = document.getElementById('app');
+    app.innerHTML = `
+        <div class="topbar">
+            <div class="logo">KARMA <span>🐾</span></div>
+            <div>⚡ <span id="xp-val">${G.xp}</span> 💎 <span id="kc-val">${G.kc}</span></div>
+        </div>
+
+        <div class="main">
+            <!-- Pet -->
+            <div id="view-pet" class="view ${currentView === 0 ? 'active' : ''}">
+                <div style="text-align:center;padding:40px 20px">
+                    <h1>Level <span id="level-val">${G.level}</span></h1>
+                    <div class="pet-container">
+                        <canvas id="pet-canvas" width="240" height="240"></canvas>
+                    </div>
+                    <h2>${G.petName}</h2>
+                    <p style="color:var(--green)">Mood: Legendary ✨</p>
+                </div>
+                <div style="display:flex;gap:15px;justify-content:center;padding:0 20px">
+                    <button onclick="feedPet()" style="background:var(--green);color:#000;padding:16px 40px;border:none;border-radius:50px;font-weight:800">🍎 Mata</button>
+                    <button onclick="playPet()" style="background:var(--purple);padding:16px 40px;border:none;border-radius:50px;font-weight:800">🎾 Lek</button>
+                </div>
+            </div>
+
+            <!-- Flash -->
+            <div id="view-flash" class="view ${currentView === 1 ? 'active' : ''}">
+                <div style="padding:20px">
+                    <h2 style="text-align:center">Flash Feed</h2>
+                    <button onclick="postFlash()" style="width:100%;margin:20px 0;background:linear-gradient(var(--pink),var(--purple));padding:18px;border:none;border-radius:50px;color:white;font-weight:800">📹 Posta Flash</button>
+                    <div id="flash-list"></div>
+                </div>
+            </div>
+
+            <!-- Uppdrag -->
+            <div id="view-uppdrag" class="view ${currentView === 2 ? 'active' : ''}">
+                <div style="padding:20px">
+                    <h2>Dagens Uppdrag</h2>
+                    <div class="card" onclick="finishQuest(0)">Posta flash → +60 XP</div>
+                    <div class="card" onclick="finishQuest(1)">Gå 8000 steg → +80 XP</div>
+                    <div class="card" onclick="finishQuest(2)">IRL samtal → +50 XP</div>
+                </div>
+            </div>
+
+            <!-- Karta -->
+            <div id="view-map" class="view ${currentView === 3 ? 'active' : ''}">
+                <div id="map" style="height:100%"></div>
+                <div class="card">
+                    <h3>Territorium</h3>
+                    <div class="zone-grid" id="zone-grid"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bnav">
+            <div class="nb ${currentView===0?'on':''}" onclick="switchView(0)">🐾 Pet</div>
+            <div class="nb ${currentView===1?'on':''}" onclick="switchView(1)">⚡ Flash</div>
+            <div class="nb ${currentView===2?'on':''}" onclick="switchView(2)">🎯 Uppdrag</div>
+            <div class="nb ${currentView===3?'on':''}" onclick="switchView(3)">🗺️ Karta</div>
+        </div>
+    `;
+
+    if (currentView === 3) initMap();
+    if (currentView === 1) renderFlashes();
+    if (currentView === 0) initCanvasAnimation();
+}
+
+function switchView(n) {
+    currentView = n;
+    renderApp();
+}
+
+// Canvas Animation (enkelt exempel)
+function initCanvasAnimation() {
+    const canvas = document.getElementById('pet-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let angle = 0;
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.save();
+        ctx.translate(canvas.width/2, canvas.height/2);
+        ctx.rotate(angle);
+        ctx.font = '120px sans-serif';
+        ctx.fillText('🐾', -60, 40);
+        ctx.restore();
+        angle += 0.02;
+        requestAnimationFrame(draw);
+    }
+    draw();
+}
+
+// Leaflet med interaktion
+function initMap() {
+    const mapContainer = document.getElementById('map');
+    if (!mapContainer) return;
+
+    if (map) return;
+
+    map = L.map('map').setView([59.3293, 18.0686], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+    L.marker([59.3293, 18.0686]).addTo(map)
+        .bindPopup("KARMA HQ")
+        .openPopup();
+
+    const grid = document.getElementById('zone-grid');
+    grid.innerHTML = '';
+    const zones = ['🌲','🏙️','🏔️','🏖️','🌊','🏛️','🌉','🛤️','🏪','🌳'];
+    for (let i = 0; i < 25; i++) {
+        const z = document.createElement('div');
+        z.className = 'zone';
+        z.textContent = zones[i % zones.length];
+        if (i % 3 === 0) z.classList.add('mine');
+        z.onclick = () => alert('Territorium erövrat!');
+        grid.appendChild(z);
+    }
+}
+
+// Övriga funktioner
+function petTap() { G.xp += 30; updateUI(); saveData(); }
+function feedPet() { G.xp += 50; updateUI(); saveData(); }
+function playPet() { G.xp += 40; G.kc += 15; updateUI(); saveData(); }
+
+function postFlash() {
+    const text = prompt("Vad visar din flash?", "Promenad i solnedgången 🌅");
+    if (!text) return;
+    G.flashes.unshift({text: text, time: "nu"});
+    G.xp += 70;
+    G.kc += 20;
+    renderFlashes();
+    updateUI();
+    saveData();
+}
+
+function renderFlashes() {
+    const container = document.getElementById('flash-list');
+    if (!container) return;
+    container.innerHTML = G.flashes.map(f => `<div class="card">${f.text} <small>(${f.time})</small></div>`).join('');
+}
+
+function finishQuest(i) {
+    const xp = [60,80,50][i];
+    G.xp += xp;
+    updateUI();
+    saveData();
+    alert(`Uppdrag klart! +${xp} XP`);
+}
+
+function updateUI() {
+    const xpEl = document.getElementById('xp-val');
+    const kcEl = document.getElementById('kc-val');
+    if (xpEl) xpEl.textContent = G.xp;
+    if (kcEl) kcEl.textContent = G.kc;
+}
 
 window.onload = () => {
-    initWebGL2();
-    console.log("%cKARMA — WebGL2 + Vertex Deformation klar", "color:#00ff88;font-weight:bold");
+    loadData();
+    renderApp();
+    console.log("%cKARMA — Full version med Leaflet och Canvas klar", "color:#00ff88;font-weight:bold");
 };
 </script>
 </body>
