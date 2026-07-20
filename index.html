@@ -1,16 +1,124 @@
 <!DOCTYPE html>
 <html lang="sv">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>KARMA</title>
-    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
-    <link rel="stylesheet" href="css/style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>KARMA</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+:root {
+    --bg: #000;
+    --s2: #111118;
+    --green: #00ff88;
+    --pink: #ff3377;
+    --gold: #ffcc00;
+    --purple: #aa66ff;
+    --sat: env(safe-area-inset-top, 0px);
+    --sab: env(safe-area-inset-bottom, 0px);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'DM Sans',sans-serif; background:var(--bg); color:#fff; height:100vh; overflow:hidden; }
+
+#app { max-width:430px; margin:0 auto; height:100%; display:flex; flex-direction:column; position:relative; }
+
+.topbar {
+    position:absolute; top:0; left:0; right:0; height:calc(52px + var(--sat));
+    padding-top:var(--sat); display:flex; align-items:center; justify-content:space-between;
+    padding:0 16px; background:rgba(0,0,0,0.95); z-index:200;
+}
+.logo { font-family:'Syne',sans-serif; font-size:26px; font-weight:900; letter-spacing:-1px; }
+
+.main { flex:1; overflow:hidden; position:relative; padding-top:52px; }
+.view { position:absolute; inset:0; display:none; flex-direction:column; overflow-y:auto; background:var(--bg); }
+.view.active { display:flex; }
+
+.card { background:var(--s2); margin:12px 16px; padding:16px; border-radius:20px; border:1px solid rgba(255,255,255,0.08); }
+
+.bnav {
+    display:flex; align-items:center; background:rgba(0,0,0,0.97); backdrop-filter:blur(32px);
+    border-top:1px solid rgba(255,255,255,0.1); padding:8px 0 calc(8px + var(--sab)); z-index:200;
+}
+.nb {
+    flex:1; display:flex; flex-direction:column; align-items:center; gap:4px;
+    padding:6px 0; cursor:pointer; color:#888;
+}
+.nb.on { color:var(--green); }
+.nb .ni { font-size:28px; transition:all .2s; }
+.nb.on .ni { transform:scale(1.2); }
+
+.pet-area { text-align:center; padding:40px 20px; }
+#pet { font-size:180px; cursor:pointer; transition:transform .4s; }
+#pet:active { transform:scale(1.35) rotate(8deg); }
+
+.btn-row { display:flex; gap:15px; justify-content:center; padding:0 20px; }
+.btn {
+    flex:1; padding:16px; border-radius:50px; font-weight:800; font-size:17px;
+    display:flex; align-items:center; justify-content:center; gap:10px;
+}
+.btn-green { background:var(--green); color:#000; }
+.btn-purple { background:var(--purple); color:white; }
+</style>
 </head>
 <body>
-    <div id="app"></div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-    <script src="js/app.js"></script>
+<div id="app">
+    <div class="topbar">
+        <div class="logo">KARMA</div>
+        <div>⚡ <span id="xp">1100</span> 💎 <span id="kc">186</span></div>
+    </div>
+
+    <div class="main">
+        <!-- PET -->
+        <div id="view-pet" class="view active">
+            <div class="pet-area">
+                <h1 style="font-size:36px;margin-bottom:10px">Level 5</h1>
+                <div id="pet" onclick="petTap()">🐾</div>
+                <h2 style="margin:15px 0 5px">Luna</h2>
+                <p style="color:var(--green);font-weight:700">Mood: Legendary ✨</p>
+            </div>
+            <div class="btn-row">
+                <button class="btn btn-green" onclick="feedPet()">🍎 Mata</button>
+                <button class="btn btn-purple" onclick="playPet()">🎾 Lek</button>
+            </div>
+        </div>
+
+        <!-- FLASH, UPPDRAG, KARTA kommer senare – säg till -->
+    </div>
+
+    <div class="bnav">
+        <div class="nb on" onclick="switchView(0)">🐾</div>
+        <div class="nb" onclick="switchView(1)">⚡</div>
+        <div class="nb" onclick="switchView(2)">🎯</div>
+        <div class="nb" onclick="switchView(3)">🗺️</div>
+    </div>
+</div>
+
+<script>
+let G = {level:5, xp:1100, kc:186};
+
+function petTap() {
+    const pet = document.getElementById('pet');
+    pet.style.transform = 'scale(1.35) rotate(12deg)';
+    setTimeout(() => pet.style.transform = '', 300);
+    G.xp += 30;
+    updateUI();
+}
+
+function feedPet() { G.xp += 50; updateUI(); }
+function playPet() { G.xp += 40; G.kc += 15; updateUI(); }
+
+function updateUI() {
+    document.getElementById('xp').textContent = G.xp;
+    document.getElementById('kc').textContent = G.kc;
+}
+
+function switchView(n) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById('view-pet').classList.add('active'); // tillfälligt
+}
+
+window.onload = updateUI;
+</script>
 </body>
 </html>
