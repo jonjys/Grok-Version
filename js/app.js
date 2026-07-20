@@ -1,5 +1,5 @@
 // ======================
-// KARMA — Full App
+// KARMA — Full App med Leaflet
 // ======================
 
 let G = {
@@ -11,7 +11,7 @@ let G = {
 };
 
 let currentView = 0;
-let map = null;
+let mapInstance = null;
 
 // Ladda / Spara
 function loadData() {
@@ -23,7 +23,7 @@ function saveData() {
     localStorage.setItem('karmaData', JSON.stringify(G));
 }
 
-// Rendera hela appen
+// Rendera appen
 function renderApp() {
     const app = document.getElementById('app');
     app.innerHTML = `
@@ -84,7 +84,7 @@ function renderApp() {
         </div>
     `;
 
-    if (currentView === 3) initMap();
+    if (currentView === 3) initLeafletMap();
     if (currentView === 1) renderFlashes();
 }
 
@@ -97,8 +97,10 @@ function switchView(n) {
 // Pet
 function petTap() {
     const pet = document.getElementById('pet');
-    if (pet) pet.style.transform = 'scale(1.4)';
-    setTimeout(() => { if (pet) pet.style.transform = ''; }, 280);
+    if (pet) {
+        pet.style.transform = 'scale(1.4) rotate(12deg)';
+        setTimeout(() => pet.style.transform = '', 280);
+    }
     G.xp += 30;
     updateUI();
     saveData();
@@ -141,17 +143,43 @@ function updateUI() {
     if (kcEl) kcEl.textContent = G.kc;
 }
 
-// Karta
-function initMap() {
+// Leaflet Karta
+function initLeafletMap() {
     const mapContainer = document.getElementById('map');
     if (!mapContainer) return;
-    // Enkel placeholder för Leaflet (lägg till Leaflet CDN om du vill ha full karta)
-    mapContainer.innerHTML = `<div style="height:100%;background:#0a0a0f;display:flex;align-items:center;justify-content:center;color:#00ff88">Karta laddas...</div>`;
+
+    if (mapInstance) {
+        mapInstance.invalidateSize();
+        return;
+    }
+
+    mapInstance = L.map('map').setView([59.3293, 18.0686], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap'
+    }).addTo(mapInstance);
+
+    // Exempelmarkör
+    L.marker([59.3293, 18.0686]).addTo(mapInstance)
+        .bindPopup("KARMA HQ")
+        .openPopup();
+
+    // Zone grid
+    const grid = document.getElementById('zone-grid');
+    grid.innerHTML = '';
+    const zones = ['🌲','🏙️','🏔️','🏖️','🌊','🏛️','🌉','🛤️','🏪','🌳'];
+    for (let i = 0; i < 25; i++) {
+        const z = document.createElement('div');
+        z.className = 'zone';
+        z.textContent = zones[i % zones.length];
+        if (i % 3 === 0) z.classList.add('mine');
+        z.onclick = () => alert('Territorium erövrat!');
+        grid.appendChild(z);
+    }
 }
 
 // Init
 window.onload = () => {
     loadData();
     renderApp();
-    console.log("%cKARMA — Full app klar (99%)", "color:#00ff88;font-weight:bold");
+    console.log("%cKARMA — Full app med Leaflet karta klar", "color:#00ff88;font-weight:bold");
 };
